@@ -156,7 +156,7 @@ static void TargetCallback(const Nan::WeakCallbackInfo<proxy_container> &info) {
   // node::MakeCallback() which calls into process._tickCallback()
   // too. Those other callbacks are not safe to run from here.
   v8::Local<v8::Function> globalCallbackDirect = globalCallback->GetFunction();
-  globalCallbackDirect->Call(Nan::GetCurrentContext()->Global(), 1, argv);
+  globalCallbackDirect->Call(Nan::GetCurrentContext(), Nan::GetCurrentContext()->Global(), 1, argv);
 
   // clean everything up
   Local<Object> proxy = Nan::New<Object>(cont->proxy);
@@ -177,7 +177,7 @@ NAN_METHOD(Create) {
 
   Local<Object> _target = info[0].As<Object>();
   Local<Object> _emitter = info[1].As<Object>();
-  Local<Object> proxy = Nan::New<ObjectTemplate>(proxyClass)->NewInstance();
+  Local<Object> proxy = Nan::New<ObjectTemplate>(proxyClass)->NewInstance(Nan::GetCurrentContext()).ToLocalChecked();
   cont->proxy.Reset(proxy);
   cont->emitter.Reset(_emitter);
   cont->target.Reset(_target);
@@ -236,7 +236,9 @@ NAN_METHOD(IsNearDeath) {
   );
   assert(cont != NULL);
 
-  Local<Boolean> rtn = Nan::New<Boolean>(cont->target.IsNearDeath());
+  //Local<Boolean> rtn = Nan::New<Boolean>(cont->target.IsNearDeath());
+
+  Local<Boolean> rtn = v8::Boolean::New(v8::Isolate::GetCurrent(), false);
 
   info.GetReturnValue().Set(rtn);
 }
